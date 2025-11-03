@@ -2,16 +2,14 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import sqlite3
 from datetime import date
-import re  # For email and phone validation
+import re  
 
-# ---------------------- PROFESSIONAL STYLING ----------------------
-# Color Palette
-BG_COLOR = "#F0F4F8"       # Light blue-gray
-FRAME_COLOR = "#FFFFFF"     # White
-PRIMARY_COLOR = "#4A90E2"   # Calm blue
-SECONDARY_COLOR = "#50E3C2" # Teal
-ALERT_COLOR = "#D0021B"    # Red
-TEXT_COLOR = "#333333"     # Dark gray
+BG_COLOR = "#F0F4F8"       
+FRAME_COLOR = "#FFFFFF"    
+PRIMARY_COLOR = "#4A90E2"   
+SECONDARY_COLOR = "#50E3C2" 
+ALERT_COLOR = "#D0021B"   
+TEXT_COLOR = "#333333"     
 ENTRY_BG = "#FFFFFF"
 FONT_NAME = "Helvetica"
 FONT_SIZE = 12
@@ -20,9 +18,8 @@ FONT_LARGE = 18
 def setup_styles():
     """Configures all ttk styles for a professional look."""
     style = ttk.Style()
-    style.theme_use('clam') # 'clam' is a good base for customization
+    style.theme_use('clam')
 
-    # General window/frame
     style.configure(".", 
         background=BG_COLOR,
         foreground=TEXT_COLOR,
@@ -35,7 +32,6 @@ def setup_styles():
         background=FRAME_COLOR, 
         foreground=TEXT_COLOR)
     
-    # Login Frame Specific
     style.configure("Login.TFrame", background=BG_COLOR, relief="none", borderwidth=0)
     style.configure("Login.TLabel", 
         background=BG_COLOR, 
@@ -45,7 +41,6 @@ def setup_styles():
         foreground=PRIMARY_COLOR, 
         font=(FONT_NAME, FONT_LARGE, "bold"))
     
-    # Buttons
     style.configure("TButton", 
         background=PRIMARY_COLOR,
         foreground="white",
@@ -56,21 +51,18 @@ def setup_styles():
         background=[('active', SECONDARY_COLOR), ('!disabled', PRIMARY_COLOR)],
         foreground=[('active', 'white')])
 
-    # Destructive action button (e.g., Delete)
     style.configure("Danger.TButton", 
         background=ALERT_COLOR, 
         foreground="white")
     style.map("Danger.TButton",
         background=[('active', "#FF4136"), ('!disabled', ALERT_COLOR)])
 
-    # Entry fields
     style.configure("TEntry", 
         fieldbackground=ENTRY_BG, 
         foreground=TEXT_COLOR,
         insertwidth=2,
         padding=5)
     
-    # Notebook (Tabs)
     style.configure("TNotebook", background=BG_COLOR, borderwidth=0)
     style.configure("TNotebook.Tab", 
         background=BG_COLOR, 
@@ -82,12 +74,11 @@ def setup_styles():
         background=[("selected", FRAME_COLOR)],
         expand=[("selected", [1, 1, 1, 0])])
     
-    # Treeview (Output Table)
     style.configure("Treeview",
         background=FRAME_COLOR,
         fieldbackground=FRAME_COLOR,
         foreground=TEXT_COLOR,
-        rowheight=30,  # Makes rows bigger
+        rowheight=30, 
         font=(FONT_NAME, FONT_SIZE - 1))
     style.configure("Treeview.Heading", 
         background=PRIMARY_COLOR,
@@ -97,11 +88,9 @@ def setup_styles():
     style.map("Treeview.Heading",
         background=[('active', SECONDARY_COLOR)])
 
-    # Center text in Treeview columns
     style.configure("Treeview", 
-        anchor="center") # This centers the data in all columns
-    # To center headers as well, you need to apply this per-column (see create_table)
-    # This centers the *values* in the cells.
+        anchor="center") 
+    
     style.layout("Treeview.Item", [
         ('Treeitem.padding', {'sticky': 'nswe', 'children': [
             ('Treeitem.indicator', {'side': 'left', 'sticky': ''}),
@@ -110,19 +99,18 @@ def setup_styles():
         ]})
     ])
 
-# ---------------------- VALIDATION UTILITIES ----------------------
 class Validator:
     @staticmethod
     def is_valid_email(email):
         """Simple regex for email validation."""
-        if not email: return True # Allow empty email
+        if not email: return True 
         pattern = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
         return re.match(pattern, email)
 
     @staticmethod
     def is_valid_phone(phone):
         """Simple regex for phone validation (10-15 digits, optional +)."""
-        if not phone: return True # Allow empty phone
+        if not phone: return True 
         pattern = r"^\+?[0-9\s.-]{10,15}$"
         return re.match(pattern, phone)
 
@@ -135,7 +123,6 @@ class Validator:
         except ValueError:
             return False
 
-# ---------------------- DATABASE CLASS (Unchanged) ----------------------
 class DatabaseManager:
     """Handles all database operations for customers, accounts, and transactions."""
 
@@ -150,7 +137,6 @@ class DatabaseManager:
         conn = self.connect()
         cur = conn.cursor()
 
-        # Customers Table
         cur.execute("""
             CREATE TABLE IF NOT EXISTS customers (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -160,7 +146,6 @@ class DatabaseManager:
             )
         """)
 
-        # Accounts Table
         cur.execute("""
             CREATE TABLE IF NOT EXISTS accounts (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -171,7 +156,6 @@ class DatabaseManager:
             )
         """)
 
-        # Transactions Table
         cur.execute("""
             CREATE TABLE IF NOT EXISTS transactions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -183,7 +167,6 @@ class DatabaseManager:
             )
         """)
         
-        # Add a simple users table for login
         cur.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -195,14 +178,12 @@ class DatabaseManager:
             )
         """)
         
-        # Create a default admin and customer if they don't exist
         cur.execute("INSERT OR IGNORE INTO users (username, password, role) VALUES ('admin', 'admin', 'admin')")
         cur.execute("INSERT OR IGNORE INTO users (username, password, role, customer_id) VALUES ('user', 'user', 'customer', 1)")
 
         conn.commit()
         conn.close()
 
-# ---------------------- BASE GUI CLASS ----------------------
 class BaseApp(ttk.Frame):
     """Reusable GUI structure for all sections."""
     def __init__(self, master, db):
@@ -219,7 +200,6 @@ class BaseApp(ttk.Frame):
         """Binds the <Return> key on an entry to a submit function."""
         entry.bind("<Return>", lambda event: submit_func())
 
-# ---------------------- CUSTOMERS TAB ----------------------
 class CustomersApp(BaseApp):
     def __init__(self, master, db):
         super().__init__(master, db)
@@ -243,7 +223,6 @@ class CustomersApp(BaseApp):
         self.email_entry.grid(row=1, column=1, padx=5, pady=5)
         self.phone_entry.grid(row=2, column=1, padx=5, pady=5)
         
-        # Automation: Bind <Return> on last entry to add_customer
         self.bind_enter_to_submit(self.phone_entry, self.add_customer)
         self.entries = [self.name_entry, self.email_entry, self.phone_entry]
 
@@ -259,13 +238,12 @@ class CustomersApp(BaseApp):
         cols = ("id", "name", "email", "phone")
         self.tree = ttk.Treeview(self, columns=cols, show="headings")
         
-        # Center the headings
         s = ttk.Style()
         s.configure("Treeview.Heading", anchor="center")
 
         for col in cols:
             self.tree.heading(col, text=col.capitalize())
-            self.tree.column(col, anchor=tk.CENTER) # Center cell data
+            self.tree.column(col, anchor=tk.CENTER) 
             
         self.tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         self.tree.bind("<<TreeviewSelect>>", self.select_row)
@@ -284,7 +262,6 @@ class CustomersApp(BaseApp):
         email = self.email_entry.get()
         phone = self.phone_entry.get()
         
-        # Validation
         if not name:
             messagebox.showerror("Error", "Name is required.")
             return
@@ -301,7 +278,7 @@ class CustomersApp(BaseApp):
             conn.commit()
             
         self.load_customers()
-        self.clear_entries(self.entries) # Auto-clear on success
+        self.clear_entries(self.entries) 
         messagebox.showinfo("Success", "Customer added successfully.")
 
     def update_customer(self):
@@ -315,7 +292,6 @@ class CustomersApp(BaseApp):
         email = self.email_entry.get()
         phone = self.phone_entry.get()
 
-        # Validation
         if not name:
             messagebox.showerror("Error", "Name cannot be empty.")
             return
@@ -348,7 +324,6 @@ class CustomersApp(BaseApp):
 
         with self.db.connect() as conn:
             cur = conn.cursor()
-            # ON DELETE CASCADE should handle related data
             cur.execute("DELETE FROM customers WHERE id=?", (cust_id,))
             conn.commit()
             
@@ -365,7 +340,6 @@ class CustomersApp(BaseApp):
             self.email_entry.insert(0, values[2])
             self.phone_entry.insert(0, values[3])
 
-# ---------------------- ACCOUNTS TAB ----------------------
 class AccountsApp(BaseApp):
     def __init__(self, master, db):
         super().__init__(master, db)
@@ -389,7 +363,7 @@ class AccountsApp(BaseApp):
         self.type_entry.grid(row=1, column=1, padx=5, pady=5)
         self.balance_entry.grid(row=2, column=1, padx=5, pady=5)
         
-        self.type_entry.insert(0, "Savings") # Default value
+        self.type_entry.insert(0, "Savings") 
         
         self.bind_enter_to_submit(self.balance_entry, self.add_account)
         self.entries = [self.cust_entry, self.type_entry, self.balance_entry]
@@ -430,7 +404,6 @@ class AccountsApp(BaseApp):
         acc_type = self.type_entry.get()
         balance_str = self.balance_entry.get() or "0"
 
-        # Validation
         if not cust_id:
             messagebox.showerror("Error", "Customer ID is required.")
             return
@@ -445,7 +418,7 @@ class AccountsApp(BaseApp):
 
         with self.db.connect() as conn:
             cur = conn.cursor()
-            # Check if customer ID exists
+            
             cur.execute("SELECT 1 FROM customers WHERE id=?", (cust_id,))
             if not cur.fetchone():
                 messagebox.showerror("Error", f"No customer found with ID: {cust_id}")
@@ -465,7 +438,7 @@ class AccountsApp(BaseApp):
             return
             
         acc_id = self.tree.item(selected[0])["values"][0]
-        cust_id = self.cust_entry.get() # Don't allow changing customer ID
+        cust_id = self.cust_entry.get() 
         acc_type = self.type_entry.get()
         balance_str = self.balance_entry.get()
 
@@ -516,7 +489,6 @@ class AccountsApp(BaseApp):
             self.type_entry.insert(0, values[2])
             self.balance_entry.insert(0, values[3])
 
-# ---------------------- TRANSACTIONS TAB ----------------------
 class TransactionsApp(BaseApp):
     def __init__(self, master, db):
         super().__init__(master, db)
@@ -524,7 +496,6 @@ class TransactionsApp(BaseApp):
         self.create_buttons()
         self.create_table()
         self.load_transactions()
-        # Bind the tab selection to reload account data
         master.bind("<<NotebookTabChanged>>", self.on_tab_changed)
 
     def create_form(self):
@@ -589,7 +560,6 @@ class TransactionsApp(BaseApp):
         amount_str = self.amount_entry.get()
         today = date.today().isoformat()
 
-        # Validation
         if not acc_id:
             messagebox.showerror("Error", "Account ID is required.")
             return
@@ -602,7 +572,6 @@ class TransactionsApp(BaseApp):
         with self.db.connect() as conn:
             cur = conn.cursor()
             
-            # Check if account exists
             cur.execute("SELECT balance FROM accounts WHERE id=?", (acc_id,))
             row = cur.fetchone()
             if not row:
@@ -611,20 +580,16 @@ class TransactionsApp(BaseApp):
             
             current_balance = row[0]
             
-            # Check for sufficient funds on withdrawal
             if t_type == "withdraw":
                 if current_balance < amount:
                     messagebox.showerror("Error", "Insufficient funds for this withdrawal.")
                     return
-                # Update balance
                 new_balance = current_balance - amount
-            else: # deposit
+            else: 
                 new_balance = current_balance + amount
 
-            # Update account balance
             cur.execute("UPDATE accounts SET balance = ? WHERE id=?", (new_balance, acc_id))
             
-            # Record transaction
             cur.execute("INSERT INTO transactions (account_id, type, amount, date) VALUES (?, ?, ?, ?)",
                         (acc_id, t_type, amount, today))
             
@@ -634,14 +599,12 @@ class TransactionsApp(BaseApp):
         self.clear_entries(self.entries)
         messagebox.showinfo("Success", f"{t_type.capitalize()} recorded successfully! New balance: ${new_balance:,.2f}")
 
-# ---------------------- ADMIN INTERFACE (The Notebook) ----------------------
 class AdminInterface(ttk.Frame):
     def __init__(self, master, db, logout_callback):
-        super().__init__(master, style="Login.TFrame") # Use bg color
+        super().__init__(master, style="Login.TFrame") 
         self.pack(fill=tk.BOTH, expand=True)
         self.db = db
 
-        # Header
         header_frame = ttk.Frame(self, style="Login.TFrame")
         header_frame.pack(fill=tk.X, pady=10)
         
@@ -649,7 +612,6 @@ class AdminInterface(ttk.Frame):
         
         ttk.Button(header_frame, text="Logout", command=logout_callback).pack(side=tk.RIGHT, padx=20)
 
-        # Notebook
         notebook = ttk.Notebook(self)
         notebook.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
 
@@ -661,7 +623,6 @@ class AdminInterface(ttk.Frame):
         notebook.add(accounts_tab, text="Accounts")
         notebook.add(transactions_tab, text="Transactions")
 
-# ---------------------- CUSTOMER INTERFACE ----------------------
 class CustomerInterface(ttk.Frame):
     def __init__(self, master, db, customer_id, logout_callback):
         super().__init__(master, style="TFrame")
@@ -683,7 +644,6 @@ class CustomerInterface(ttk.Frame):
             return row[0] if row else "Valued Customer"
 
     def create_widgets(self):
-        # Header
         header_frame = ttk.Frame(self)
         header_frame.pack(fill=tk.X, pady=10)
         
@@ -691,11 +651,9 @@ class CustomerInterface(ttk.Frame):
         
         ttk.Button(header_frame, text="Logout", command=self.logout_callback).pack(side=tk.RIGHT)
 
-        # Main content
-        content_frame = ttk.Frame(self, style="Login.TFrame") # bg color
+        content_frame = ttk.Frame(self, style="Login.TFrame") 
         content_frame.pack(fill=tk.BOTH, expand=True, pady=10)
         
-        # Accounts
         ttk.Label(content_frame, text="Your Accounts", style="Title.TLabel").pack(pady=10)
         
         cols_acc = ("id", "account_type", "balance")
@@ -707,7 +665,6 @@ class CustomerInterface(ttk.Frame):
             self.accounts_tree.column(col, anchor=tk.CENTER)
         self.accounts_tree.pack(fill=tk.X, padx=10)
         
-        # Transactions
         ttk.Label(content_frame, text="Your Transactions", style="Title.TLabel").pack(pady=20)
         
         cols_trans = ("id", "account_id", "type", "amount", "date")
@@ -718,7 +675,6 @@ class CustomerInterface(ttk.Frame):
         self.trans_tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
     def load_details(self):
-        # Clear trees
         for tree in [self.accounts_tree, self.trans_tree]:
             for row in tree.get_children():
                 tree.delete(row)
@@ -726,23 +682,19 @@ class CustomerInterface(ttk.Frame):
         with self.db.connect() as conn:
             cur = conn.cursor()
             
-            # Load Accounts
             cur.execute("SELECT id, account_type, balance FROM accounts WHERE customer_id=?", (self.customer_id,))
             account_ids = []
             for acc in cur.fetchall():
                 account_ids.append(acc[0])
                 self.accounts_tree.insert("", tk.END, values=acc)
             
-            # Load Transactions
             if account_ids:
-                # Create a placeholder string for the IN clause
                 placeholders = ",".join("?" * len(account_ids))
                 query = f"SELECT * FROM transactions WHERE account_id IN ({placeholders}) ORDER BY date DESC"
                 cur.execute(query, account_ids)
                 for t in cur.fetchall():
                     self.trans_tree.insert("", tk.END, values=t)
 
-# ---------------------- LOGIN FRAME ----------------------
 class LoginFrame(ttk.Frame):
     def __init__(self, master, db, login_success_callback):
         super().__init__(master, style="Login.TFrame")
@@ -750,18 +702,15 @@ class LoginFrame(ttk.Frame):
         self.db = db
         self.login_success_callback = login_success_callback
 
-        # Center the login form
         form_frame = ttk.Frame(self, style="TFrame", padding=40)
         form_frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
         ttk.Label(form_frame, text="🏦 Bank Login", style="Title.TLabel", background=FRAME_COLOR).pack(pady=(0, 20))
         
-        # Username
         ttk.Label(form_frame, text="Username").pack(pady=5)
         self.user_entry = ttk.Entry(form_frame, width=30)
         self.user_entry.pack(pady=5)
         
-        # Password
         ttk.Label(form_frame, text="Password").pack(pady=5)
         self.pass_entry = ttk.Entry(form_frame, width=30, show="*")
         self.pass_entry.pack(pady=5)
@@ -769,10 +718,9 @@ class LoginFrame(ttk.Frame):
         self.login_button = ttk.Button(form_frame, text="Login", command=self.attempt_login, width=28)
         self.login_button.pack(pady=20)
         
-        self.user_entry.insert(0, "admin") # Default for demo
-        self.pass_entry.insert(0, "admin") # Default for demo
+        self.user_entry.insert(0, "admin") 
+        self.pass_entry.insert(0, "admin") 
         
-        # Bind <Return> to login
         self.user_entry.bind("<Return>", lambda e: self.pass_entry.focus())
         self.pass_entry.bind("<Return>", lambda e: self.attempt_login())
 
@@ -793,12 +741,11 @@ class LoginFrame(ttk.Frame):
             else:
                 messagebox.showerror("Login Failed", "Invalid username or password.")
 
-# ---------------------- MAIN APP ----------------------
 class BankApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("🏦 Professional Bank Management System")
-        self.geometry("1000x700") # Bigger default window
+        self.geometry("1000x700") 
         self.db = DatabaseManager()
         
         setup_styles()
@@ -824,7 +771,7 @@ class BankApp(tk.Tk):
             self.current_frame = CustomerInterface(self, self.db, customer_id, self.show_login_screen)
             self.title("Bank System - Customer Portal")
 
-# ---------------------- RUN ----------------------
 if __name__ == "__main__":
     app = BankApp()
+
     app.mainloop()
